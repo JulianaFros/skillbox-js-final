@@ -3,67 +3,143 @@ import { renderCards } from './renderCards.js';
 import { renderPagination } from './pagination.js';
 import { filterAndSort } from './pipeline.js';
 
-function ensureSet(obj, key) {
-  if (!obj[key] || !(obj[key] instanceof Set)) obj[key] = new Set();
-  return obj[key];
+function ensureFiltersSet(state, key) {
+  if (!state[key] || !(state[key] instanceof Set)) {
+    state[key] = new Set();
+  }
+  return state[key];
 }
 
-function findCounterForInput(input) {
-  let label = input.closest('label');
+function findCounterInLabel(input) {
+  const label = input.closest('label');
   if (label) {
-    const c1 = label.querySelector('[data-count]');
-    if (c1) return c1;
-  }
-  const wrap = input.closest('[data-filter-item], .filters__item, .catalog__filters-item');
-  if (wrap) {
-    const c2 = wrap.querySelector('[data-count]');
-    if (c2) return c2;
-  }
-  const k = input.dataset.filter;
-  const v = input.dataset.value;
-  if (k && v) {
-    const c3 = document.querySelector(`[data-count][data-filter="${k}"][data-value="${v}"]`);
-    if (c3) return c3;
+    return label.querySelector('[data-count]');
   }
   return null;
 }
 
-function computeCountFor(key, val, isChecked) {
-  const tmp = {
+function findCounterInWrapper(input) {
+  const wrapper = input.closest('[data-filter-item], .filters__item, .catalog__filters-item');
+  if (wrapper) {
+    return wrapper.querySelector('[data-count]');
+  }
+  return null;
+}
+
+function findCounterByDataAttributes(input) {
+  const filterKey = input.dataset.filter;
+  const filterValue = input.dataset.value;
+  if (filterKey && filterValue) {
+    return document.querySelector(`[data-count][data-filter="${filterKey}"][data-value="${filterValue}"]`);
+  }
+  return null;
+}
+
+function findCounterForInput(input) {
+  return (
+    findCounterInLabel(input) ||
+    findCounterInWrapper(input) ||
+    findCounterByDataAttributes(input) ||
+    null
+  );
+}
+
+function createTemporaryState(catalogState, key, value, isChecked) {
+  const temporaryState = {
     city: catalogState.city,
     sort: catalogState.sort,
     perPage: catalogState.perPage,
     filters: {}
   };
 
-  // Копируем текущие фильтры
-  for (const k in catalogState.filters) {
-    tmp.filters[k] = new Set([...catalogState.filters[k]]);
-  }
-  
-  ensureSet(tmp.filters, key);
-  
-  // Если чекбокс УЖЕ включен - считаем БЕЗ него
-  // Если выключен - считаем С ним
-  if (isChecked) {
-    tmp.filters[key].delete(String(val));
-  } else {
-    tmp.filters[key].add(String(val));
+  for (const filterKey in catalogState.filters) {
+    temporaryState.filters[filterKey] = new Set([...catalogState.filters[filterKey]]);
   }
 
-  return filterAndSort(catalogState.all, tmp).length;
+  ensureFiltersSet(temporaryState.filters, key);
+
+  if (isChecked) {
+    temporaryState.filters[key].delete(String(value));
+  } else {
+    temporaryState.filters[key].add(String(value));
+  }
+
+  return temporaryState;
 }
 
-function updateCounts(root = document) {
-  const inputs = root.querySelectorAll('input[type="checkbox"][data-filter][data-value]');
-  inputs.forEach((inp) => {
-    const key = inp.dataset.filter;
-    const val = String(inp.dataset.value);
-    const counter = findCounterForInput(inp);
-    if (!key || !val || !counter) return;
+function computeCountFor(key, value, isChecked) {
+  const temporaryState = createTemporaryState(catalogState, key, value, isChecked);
+  return filterAndSort(catalogState.all, temporaryState).length;
+}
 
-    const count = computeCountFor(key, val, inp.checked);
+function updateFilterCounts(root = document) {
+  const checkboxes = root.querySelectorAll('input[type="checkbox"][data-filter][data-value]');
+  
+  checkboxes.forEach((checkbox) => {
+    const key = checkbox.dataset.filter;
+    const value = String(checkbox.dataset.value);
+    const counter = findCounterForInput(checkbox);
+    
+    if (!key || !value || !counter) return;
+
+    const count = computeCountFor(key, value, checkbox.checked);
     counter.textContent = String(count);
+  });
+}
+
+function handleCheckboxChange(checkbox) {
+  const key = checkbox.dataset.filter;
+  const value = checkbox.dataset.value;
+  if (!key || !value) return;
+
+  ensureFiltersSet(catalogState.filters, key);
+
+  if (checkbox.checked) {
+    catalogState.filters[key].add(String(value));
+  } else {
+    catalogState.filters[key].delete(String(value));
+  }
+
+  catalogState.page = 1;
+  renderCards();
+  renderPagination();
+}
+
+function setupCheckboxListeners(form) {
+  form.addEventListener('change', (e) => {
+    const checkbox = e.target;
+    if (checkbox.type !== 'checkbox') return;
+
+    handleCheckboxChange(checkbox);
+    updateFilterCounts(form);
+  });
+}
+
+function handleSortChange(sortSelect) {
+  catalogState.sort = sortSelect.value;
+  catalogState.page = 1;
+  renderCards();
+  renderPagination();
+  updateFilterCounts();
+}
+
+function setupSortListener() {
+  const sortSelect = document.querySelector('[data-sort]');
+  if (sortSelect) {
+    sortSelect.addEventListener('change', () => {
+      handleSortChange(sortSelect);
+    });
+  }
+}
+
+function setupCatalogEventListeners() {
+  document.addEventListener('catalog:rendered', () => updateFilterCounts());
+  
+  document.addEventListener('catalog:cityChanged', () => {
+    catalogState.page = 1;
+    renderCards();
+    renderPagination();
+    updateFilterCounts();
   });
 }
 
@@ -71,46 +147,8 @@ export function initFilters() {
   const form = document.querySelector('.catalog-form');
   if (!form) return;
 
-  updateCounts(form);
-
-  form.addEventListener('change', (e) => {
-    const inp = e.target;
-    if (inp.type !== 'checkbox') return;
-
-    const key = inp.dataset.filter;
-    const val = inp.dataset.value;
-    if (!key || !val) return;
-
-    ensureSet(catalogState.filters, key);
-
-    if (inp.checked) {
-      catalogState.filters[key].add(String(val));
-    } else {
-      catalogState.filters[key].delete(String(val));
-    }
-
-    catalogState.page = 1;
-    renderCards();
-    renderPagination();
-    updateCounts(form);
-  });
-
-  const sortSel = document.querySelector('[data-sort]');
-  if (sortSel) {
-    sortSel.addEventListener('change', () => {
-      catalogState.sort = sortSel.value;
-      catalogState.page = 1;
-      renderCards();
-      renderPagination();
-      updateCounts(form);
-    });
-  }
-
-  document.addEventListener('catalog:rendered', () => updateCounts(form));
-  document.addEventListener('catalog:cityChanged', () => {
-    catalogState.page = 1;
-    renderCards();
-    renderPagination();
-    updateCounts(form);
-  });
+  updateFilterCounts(form);
+  setupCheckboxListeners(form);
+  setupSortListener();
+  setupCatalogEventListeners();
 }

@@ -1,26 +1,8 @@
-import { $, htmlToNode } from './dom.js';
-import { catalogState } from './state.js';
-import { filterAndSort } from './pipeline.js';
+import { htmlToNode } from './dom.js';
 
 function normalizeImgPath(p) {
   if (!p) return null;
   return String(p).replace(/^(\.\.\/)+/, '');
-}
-
-
-
-function mapCityKey(city) {
-  const m = {
-    'москва': 'moscow',
-    'moscow': 'moscow',
-    'санкт-петербург': 'saintPetersburg',
-    'петербург': 'saintPetersburg',
-    'spb': 'saintPetersburg',
-    'saintpetersburg': 'saintPetersburg',
-    'оренбург': 'orenburg',
-    'orenburg': 'orenburg',
-  };
-  return m[String(city || '').trim().toLowerCase()] || null;
 }
 
 function formatPrice(n) {
@@ -28,34 +10,17 @@ function formatPrice(n) {
   return val.toLocaleString('ru-RU');
 }
 
-function cardTemplate(item) {
-  const {
-    id, name, title, price, rating, availability, type, image
-  } = item;
-
-  const displayTitle = title || name || 'Товар';
+function createProductCard(item) {
+  const { id, name, price, image, availability } = item;
   const img = normalizeImgPath(image) || 'images/item-1.png';
-
   const newPrice = price?.new ?? 0;
   const oldPrice = price?.old ?? null;
 
-  let availText = 'Нет на складе';
-  if (availability && typeof availability === 'object') {
-    const ck = mapCityKey(catalogState.city);
-    if (ck && typeof availability[ck] === 'number') {
-      const qty = availability[ck];
-      availText = qty > 0 ? `В наличии: ${qty}` : 'Нет на складе';
-    } else {
-      const total = Object.values(availability).reduce((s, n) => s + (Number(n) || 0), 0);
-      availText = total > 0 ? `В наличии: ${total}` : 'Нет на складе';
-    }
-  }
-
   return `
-    <li class="catalog__item" data-id="${id}" data-type="${Array.isArray(type) ? type.join(',') : (type || '')}">
-      <div class="product-card">
+    <li class="day-products__item swiper-slide">
+      <div class="product-card product-card--small">
         <div class="product-card__visual">
-          <img class="product-card__img" src="${img}" height="436" width="290" alt="${displayTitle}">
+          <img class="product-card__img" src="${img}" height="344" width="290" alt="${name}">
           <div class="product-card__more">
             <button class="product-card__link btn btn--icon" data-action="add-to-basket" data-id="${id}">
               <span class="btn__text">В корзину</span>
@@ -68,9 +33,8 @@ function cardTemplate(item) {
             </a>
           </div>
         </div>
-
         <div class="product-card__info">
-          <h2 class="product-card__title">${displayTitle}</h2>
+          <h2 class="product-card__title">${name}</h2>
           ${oldPrice ? `<span class="product-card__old">
             <span class="product-card__old-number">${formatPrice(oldPrice)}</span>
             <span class="product-card__old-add">₽</span>
@@ -106,27 +70,70 @@ function cardTemplate(item) {
   `;
 }
 
-function sliceByPage(arr, page, perPage) {
-  const start = (page - 1) * perPage;
-  return arr.slice(start, start + perPage);
+export function initDayProducts(data) {
+  const container = document.querySelector('.day-products__list');
+  if (!container) return;
+
+  const dayProducts = Array.isArray(data) 
+    ? data.filter(item => item.goodsOfDay === true)
+    : [];
+
+  if (dayProducts.length === 0) return;
+
+  container.innerHTML = '';
+  const frag = document.createDocumentFragment();
+  dayProducts.forEach(item => {
+    frag.appendChild(htmlToNode(createProductCard(item)));
+  });
+  container.appendChild(frag);
+
+  initSwiper();
 }
 
-export function renderCards() {
-  if (!$.list) return;
+function initSwiper() {
+  if (typeof Swiper === 'undefined') {
+    console.warn('Swiper не загружен');
+    return;
+  }
 
-  const filtered = filterAndSort(catalogState.all, catalogState);
+  const swiperContainer = document.querySelector('.day-products__slider');
+  if (!swiperContainer) return;
 
-  const totalPages = Math.max(1, Math.ceil(filtered.length / catalogState.perPage));
-  if (catalogState.page > totalPages) catalogState.page = 1;
+  const prevBtn = document.querySelector('.day-products__navigation-btn--prev');
+  const nextBtn = document.querySelector('.day-products__navigation-btn--next');
 
-  const pageItems = sliceByPage(filtered, catalogState.page, catalogState.perPage);
+  const swiper = new Swiper(swiperContainer, {
+    slidesPerView: 1,
+    spaceBetween: 20,
+    navigation: {
+      nextEl: nextBtn,
+      prevEl: prevBtn,
+    },
+    breakpoints: {
+      768: {
+        slidesPerView: 2,
+        spaceBetween: 30,
+      },
+      1024: {
+        slidesPerView: 3,
+        spaceBetween: 32,
+      },
+      1440: {
+        slidesPerView: 4,
+        spaceBetween: 32,
+      },
+    },
+  });
 
-  $.list.innerHTML = '';
-  const frag = document.createDocumentFragment();
-  pageItems.forEach(item => frag.appendChild(htmlToNode(cardTemplate(item))));
-  $.list.appendChild(frag);
+  swiper.on('slideChange', () => {
+    if (prevBtn) {
+      prevBtn.disabled = swiper.isBeginning;
+    }
+    if (nextBtn) {
+      nextBtn.disabled = swiper.isEnd;
+    }
+  });
 
-  document.dispatchEvent(new CustomEvent('catalog:rendered', {
-    detail: { total: filtered.length, page: catalogState.page, totalPages }
-  }));
+  if (prevBtn) prevBtn.disabled = swiper.isBeginning;
+  if (nextBtn) nextBtn.disabled = swiper.isEnd;
 }

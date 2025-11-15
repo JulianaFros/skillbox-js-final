@@ -23,5 +23,9 @@
     &::placeholder {
       color: $color-dark-gray;
     }
+
+    &----error {
+      border-color: #d32f2f !important;
+    }
   }
 }

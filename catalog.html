@@ -214,7 +214,7 @@
             <ul class="catalog-form__list-col">
               <li class="catalog-form__item-col">
                 <div class="custom-checkbox custom-checkbox--pendant">
-                  <input class="visually-hidden custom-checkbox__field" id="pendant" type="checkbox" name="type" value="pendant">
+                  <input class="visually-hidden custom-checkbox__field" id="pendant" type="checkbox" name="type" value="pendant" data-filter="type" data-value="pendant">
                   <label class="custom-checkbox__label" for="pendant">
                       <span class="custom-checkbox__name">
                         Подвесные
@@ -222,13 +222,13 @@
                     <svg class="custom-checkbox__icon" width="10" height="10" aria-hidden="true">
                       <use xlink:href="images/sprite.svg#icon-check"></use>
                     </svg>
-                    <span class="custom-checkbox__count">158</span>
+                    <span class="custom-checkbox__count" data-count data-filter="type" data-value="pendant">158</span>
                   </label>
                 </div>
               </li>
               <li class="catalog-form__item-col">
                 <div class="custom-checkbox custom-checkbox--ceiling">
-                  <input class="visually-hidden custom-checkbox__field" id="ceiling" type="checkbox" name="type" value="ceiling">
+                  <input class="visually-hidden custom-checkbox__field" id="ceiling" type="checkbox" name="type" value="ceiling" data-filter="type" data-value="ceiling">
                   <label class="custom-checkbox__label" for="ceiling">
                       <span class="custom-checkbox__name">
                         Потолочные
@@ -236,13 +236,13 @@
                     <svg class="custom-checkbox__icon" width="10" height="10" aria-hidden="true">
                       <use xlink:href="images/sprite.svg#icon-check"></use>
                     </svg>
-                    <span class="custom-checkbox__count">118</span>
+                    <span class="custom-checkbox__count" data-count data-filter="type" data-value="ceiling">118</span>
                   </label>
                 </div>
               </li>
               <li class="catalog-form__item-col">
                 <div class="custom-checkbox custom-checkbox--overhead">
-                  <input class="visually-hidden custom-checkbox__field" id="overhead" type="checkbox" name="type" value="overhead">
+                  <input class="visually-hidden custom-checkbox__field" id="overhead" type="checkbox" name="type" value="overhead" data-filter="type" data-value="overhead">
                   <label class="custom-checkbox__label" for="overhead">
                       <span class="custom-checkbox__name">
                         Накладные
@@ -250,13 +250,13 @@
                     <svg class="custom-checkbox__icon" width="10" height="10" aria-hidden="true">
                       <use xlink:href="images/sprite.svg#icon-check"></use>
                     </svg>
-                    <span class="custom-checkbox__count">463</span>
+                    <span class="custom-checkbox__count" data-count data-filter="type" data-value="overhead">463</span>
                   </label>
                 </div>
               </li>
               <li class="catalog-form__item-col">
                 <div class="custom-checkbox custom-checkbox--point">
-                  <input class="visually-hidden custom-checkbox__field" id="point" type="checkbox" name="type" value="point">
+                  <input class="visually-hidden custom-checkbox__field" id="point" type="checkbox" name="type" value="point" data-filter="type" data-value="point">
                   <label class="custom-checkbox__label" for="point">
                       <span class="custom-checkbox__name">
                         Точечные
@@ -264,14 +264,14 @@
                     <svg class="custom-checkbox__icon" width="10" height="10" aria-hidden="true">
                       <use xlink:href="images/sprite.svg#icon-check"></use>
                     </svg>
-                    <span class="custom-checkbox__count">158</span>
+                    <span class="custom-checkbox__count" data-count data-filter="type" data-value="point">158</span>
                   </label>
                 </div>
               </li>
               <li class="catalog-form__item-col">
                 <div class="custom-checkbox custom-checkbox--nightlights">
                   <input class="visually-hidden custom-checkbox__field" id="nightlights" type="checkbox"
-                         name="type" value="nightlights">
+                         name="type" value="nightlights" data-filter="type" data-value="nightlights">
                   <label class="custom-checkbox__label" for="nightlights">
                       <span class="custom-checkbox__name">
                         Ночники
@@ -279,7 +279,7 @@
                     <svg class="custom-checkbox__icon" width="10" height="10" aria-hidden="true">
                       <use xlink:href="images/sprite.svg#icon-check"></use>
                     </svg>
-                    <span class="custom-checkbox__count">118</span>
+                    <span class="custom-checkbox__count" data-count data-filter="type" data-value="nightlights">118</span>
                   </label>
                 </div>
               </li>
@@ -314,10 +314,10 @@
         <div class="catalog__products">
           <div class="catalog__sort">
             <p class="catalog__sort-text">Сортировать по:</p>
-            <select class="catalog__sort-select" name="sort">
-              <option value="price-min">Сначала дешёвые</option>
-              <option value="price-max">Сначала дорогие</option>
-              <option value="rating-max">Сначала популярные</option>
+            <select class="catalog__sort-select" name="sort" data-sort>
+              <option value="price-asc">Сначала дешёвые</option>
+              <option value="price-desc">Сначала дорогие</option>
+              <option value="rating-desc">Сначала популярные</option>
             </select>
           </div>
           <ul class="catalog__list">

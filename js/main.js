@@ -5,6 +5,11 @@ import { initMainMenu } from './components/menu.js';
 import { initLocationPicker } from './components/location.js';
 import { renderPagination } from './components/pagination.js';
 import { initFilters } from './components/filters.js';
+import { initAccordion } from './components/accordion.js';
+import { initDayProducts } from './components/dayProducts.js';
+import { initBasket } from './components/basket.js';
+import { initForm } from './components/form.js';
+import { initTooltips } from './components/tooltip.js';
 
 async function init() {
     try {
@@ -12,11 +17,10 @@ async function init() {
         catalogState.all = Array.isArray(data) ? data : (data?.items ?? []);
         catalogState.page = 1;
         renderCards();
-        catalogState.all = Array.isArray(data) ? data : (data?.items ?? []);
-        catalogState.page = 1;
-        renderCards();
         renderPagination();
         initFilters();
+        initDayProducts(catalogState.all);
+        initTooltips();
     } catch (e) {
         console.error(e);
         const list = document.querySelector('.catalog__list');
@@ -29,5 +33,8 @@ document.addEventListener('DOMContentLoaded', init);
 document.addEventListener('DOMContentLoaded', () => {
     initMainMenu();
     initLocationPicker();
+    initAccordion();
+    initBasket();
+    initForm();
 });
 

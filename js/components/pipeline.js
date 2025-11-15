@@ -1,10 +1,19 @@
 export function filterAndSort(all, state) {
   let items = Array.isArray(all) ? [...all] : [];
 
+  if (state.filters && state.filters.type && state.filters.type.size > 0) {
+    const selectedTypes = Array.from(state.filters.type);
+    items = items.filter((item) => {
+      const itemTypes = Array.isArray(item.type) ? item.type : [];
+      return selectedTypes.some(selectedType => itemTypes.includes(selectedType));
+    });
+  }
+
   if (state.city) {
-    const norm = (s) => String(s || '').trim().toLowerCase();
+    const normalizeCity = (cityName) => String(cityName || '').trim().toLowerCase();
+    
     const mapCityKey = (city) => {
-      const m = {
+      const cityMapping = {
         'москва': 'moscow',
         'moscow': 'moscow',
         'санкт-петербург': 'saintPetersburg',
@@ -16,22 +25,22 @@ export function filterAndSort(all, state) {
         'оренбург': 'orenburg',
         'orenburg': 'orenburg',
       };
-      return m[norm(city)] || null;
+      return cityMapping[normalizeCity(city)] || null;
     };
 
-    const key = mapCityKey(state.city);
+    const cityKey = mapCityKey(state.city);
 
-    if (key) {
-      items = items.filter((it) => {
-        const av = it?.availability;
-        if (!av || typeof av !== 'object') return false;
-        const n = av[key];
-        const qty = typeof n === 'string' ? Number(n) : n;
-        return typeof qty === 'number' ? qty > 0 : false;
+    if (cityKey) {
+      items = items.filter((item) => {
+        const availability = item?.availability;
+        if (!availability || typeof availability !== 'object') return false;
+        
+        const quantity = availability[cityKey];
+        const parsedQuantity = typeof quantity === 'string' ? Number(quantity) : quantity;
+        return typeof parsedQuantity === 'number' ? parsedQuantity > 0 : false;
       });
     }
   }
-
 
   switch (state.sort) {
     case 'price-asc':

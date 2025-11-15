@@ -65,3 +65,58 @@
     }
   }
 }
+
+// Кастомные стили для Tippy.js
+.tippy-box[data-theme~='light'] {
+  background-color: $color-white;
+  border-radius: 8px;
+  box-shadow: 0 10px 60px 0 rgba(72, 72, 72, 0.1);
+  padding: 16px 8px;
+  font-size: 12px;
+  line-height: 13.2px;
+
+  .tippy-content {
+    padding: 0;
+  }
+
+  .tippy-arrow {
+    color: $color-white;
+  }
+
+  .tooltip__text {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 13.2px;
+    color: $color-black;
+  }
+
+  .tooltip__list {
+    margin: 8px 0 0;
+    padding: 0;
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .tooltip__item {
+    position: relative;
+    padding: 0 0 0 16px;
+    color: $color-black;
+
+    &::before {
+      content: "";
+      height: 6px;
+      width: 6px;
+      border-radius: 50%;
+      background-color: $color-granny-smith-apple;
+      position: absolute;
+      left: 0;
+      top: calc(50% - 3px);
+    }
+  }
+
+  .tooltip__count {
+    font-weight: 500;
+  }
+}
