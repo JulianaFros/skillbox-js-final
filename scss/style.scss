@@ -1,0 +1,38 @@
+/* Vendor */
+/* ------------------------------------ */
+@use "vendor/swiper";
+@use "vendor/tippy";
+
+/* Global */
+/* ------------------------------------ */
+@use "global/normalize";
+@use "global/variables";
+@use "global/mixins";
+@use "global/fonts";
+@use "global/reboot";
+@use "global/container";
+@use "global/visually-hidden";
+
+/* Blocks */
+/* ------------------------------------ */
+@use "blocks/btn";
+@use "blocks/header";
+@use "blocks/location";
+@use "blocks/basket";
+@use "blocks/breadcrumbs";
+@use "blocks/main-menu";
+@use "blocks/catalog";
+@use "blocks/catalog-form";
+@use "blocks/custom-checkbox";
+@use "blocks/custom-radio";
+@use "blocks/product-card";
+@use "blocks/tooltip";
+@use "blocks/day-products";
+@use "blocks/description";
+@use "blocks/faq";
+@use "blocks/accordion";
+@use "blocks/questions";
+@use "blocks/custom-input";
+@use "blocks/footer";
+@use "blocks/message";
+@use "blocks/pagination";

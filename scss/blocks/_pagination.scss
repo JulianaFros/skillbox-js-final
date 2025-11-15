@@ -1,0 +1,30 @@
+@use "../global/variables" as *;
+@use "../global/mixins" as *;
+
+.pagination {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 32px;
+    list-style: none;
+
+    &__btn {
+        height: 40px;
+        width: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+        line-height: 25.2px;
+        color: $color-dark-gray;
+        transition: opacity $transition;
+        border: none;
+        background-color: transparent;
+    }
+
+    &__btn--active {
+        background: #e30611;
+        color: #fff;
+        border-color: #e30611;
+    }
+}
